@@ -1,0 +1,4 @@
+You will only need Python for this.
+Make sure you have install Python.
+
+Enjoy finding you would be alive on Titanic or not.
