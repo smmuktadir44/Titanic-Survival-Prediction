@@ -9,7 +9,7 @@ model = pickle.load(open("Model/Titanic_survival_Prediction.pkl","rb"))
 def home():
     return render_template("titanic_prediction.html")
 
-@app.route('predict',methods=['POST'])
+@app.route('/predict',methods=['POST'])
 def predict():
     p_class = request.form.get["pclass"]
     gender = request.form.get["sex"]
@@ -26,3 +26,4 @@ def predict():
 
 if __name__=="__main__":
     app.run(debug=True)
+
