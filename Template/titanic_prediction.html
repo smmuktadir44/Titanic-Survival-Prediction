@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titanic Survival Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><path d="M0,300 Q300,200 600,300 T1200,300 L1200,600 L0,600 Z" fill="%23ffffff" opacity="0.03"/></svg>') repeat-x bottom;
+            animation: wave 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes wave {
+            0% { background-position: 0 0; }
+            100% { background-position: 1200px 0; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .ship-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            color: #1a3a52;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: #5a7a92;
+            font-size: 1.1em;
+            font-style: italic;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #2c4a5e;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #d4dfe8;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4a90a4;
+            box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+        }
+
+        .btn-predict {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-predict:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .survived {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: #0d5e3a;
+            border: 3px solid #4caf50;
+        }
+
+        .not-survived {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #8b0000;
+            border: 3px solid #d32f2f;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #4a90a4;
+        }
+
+        .info-box p {
+            color: #2c4a5e;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="ship-icon">🚢</div>
+            <h1>Titanic Survival Predictor</h1>
+            <p class="subtitle">Would you have survived the fateful voyage?</p>
+        </div>
+
+        <form action="/predict" method="POST">
+            <div class="form-group">
+                <label for="pclass">Passenger Class</label>
+                <select id="pclass" name="pclass" required>
+                    <option value="">Select Class</option>
+                    <option value="1">1st Class (Upper)</option>
+                    <option value="2">2nd Class (Middle)</option>
+                    <option value="3">3rd Class (Lower)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sex">Gender</label>
+                <select id="sex" name="sex" required>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" name="age" required>
+            </div>
+
+            <div class="form-group">
+                <label for="sibsp">Number of Siblings/Spouses Aboard</label>
+                <input type="number" id="sibsp" name="sibsp" placeholder="0-8" min="0" max="8" value="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="parch">Number of Parents/Children Aboard</label>
+                <input type="number" id="parch" name="parch" placeholder="0-6" min="0" max="6" value="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fare">Fare Paid (£)</label>
+                <input type="number" id="fare" name="fare" placeholder="Enter fare" min="0" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="embarked">Port of Embarkation</label>
+                <select id="embarked" name="embarked" required>
+                    <option value="">Select Port</option>
+                    <option value="C">Cherbourg</option>
+                    <option value="Q">Queenstown</option>
+                    <option value="S">Southampton</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-predict">🔮 Predict Survival</button>
+        </form>
+
+        {% if prediction_text %}
+        <div class="result {{ result_class }}" style="display:block;">
+            {{ prediction_text }}
+        </div>
+        {% endif %}
+
+
+        <div class="info-box">
+            <p><strong>💡 Did you know?</strong> The survival rate on the Titanic was heavily influenced by factors like passenger class, gender, and age. Women and children in first class had the highest survival rates.</p>
+        </div>
+    </div>
+</body>
+</html>
